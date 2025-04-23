@@ -71,7 +71,7 @@ def insertionsort_otimizado(arr):
             sorted_list.append(item)  # Se não inseriu antes, é o maior até agora
     return sorted_list
 
-# Shell Sort usando sequências de gap padrão (n/2, n/4, ...)
+# Shell Sort usando sequências de gap padrão
 def shellsort_1(arr):
     a = arr.copy()
     n = len(a)
@@ -87,7 +87,7 @@ def shellsort_1(arr):
         gap //= 2  # Reduz o gap
     return a
 
-# Shell Sort usando sequência de Knuth (1, 4, 13, ...)
+# Shell Sort usando sequência de Knuth
 def shellsort_2(arr):
     a = arr.copy()
     gaps = [1]
@@ -121,7 +121,7 @@ def exibir_tabela(resultados):
     print(f"{'Método':30} {'Aleatória':10} {'Ordenada':10} {'Inversa':10}")
     for linha in resultados:
         nome, aleatoria, ordenada, inversa = linha
-        print(f"{nome:30} {aleatoria:>10f} {ordenada:10f} {inversa:10f}")
+        print(f"{nome:30} {aleatoria:10f} {ordenada:10f} {inversa:10f}")
 
 # Função principal que executa o benchmark dos algoritmos
 def executar_benchmark(n=1000):
@@ -131,21 +131,19 @@ def executar_benchmark(n=1000):
     entrada_inversa = sorted(entrada_aleatoria, reverse=True)  # Lista inversamente ordenada
 
     entradas = [entrada_aleatoria, entrada_ordenada, entrada_inversa]
-
-    # Lista de algoritmos a serem testados com seus nomes
+ 
     algoritmos = [
         ("Bubblesort (básico)", bubblesort),
         ("Bubblesort (otimizado)", bubblesort_otimizado),
         ("Selectionsort (básico)", selectionsort),
-        ("Selectionsort (recursivo)", lambda a: selectionsort_otimizado(a.copy())),
+        ("Selectionsort (otimizado)", lambda a: selectionsort_otimizado(a.copy())),
         ("Insertionsort (básico)", insertionsort),
-        ("Insertionsort (com insert)", insertionsort_otimizado),
-        ("Shellsort (1,2,4,...)", shellsort_1),
-        ("Shellsort (1,4,13,...)", shellsort_2),
+        ("Insertionsort (otimizado)", insertionsort_otimizado),
+        ("Shellsort gap", shellsort_1),
+        ("Shellsort knuth", shellsort_2),
     ]
-    # Mede os tempos e exibe os resultados
+    
     resultados = medir_tempos(algoritmos, entradas)
     exibir_tabela(resultados)
 
-# Chama a função principal para executar os testes
 executar_benchmark(n=1000)
