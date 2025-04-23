@@ -1,0 +1,151 @@
+import time  
+import random  
+import sys 
+
+sys.setrecursionlimit(3000) # pesquisei como aumentar o o limite de recursão para evitar o erro de recursão 
+
+
+def bubblesort(arr):
+    a = arr.copy()  # Copiar a lista para não alterar a original
+    n = len(a)
+    for i in range(n):  # controla todas as vezes que passa 
+        for j in range(0, n-i-1):  # faz as comparações
+            if a[j] > a[j+1]:  # verifica Se um elemento está fora de ordem
+                a[j], a[j+1] = a[j+1], a[j]  # faz a troca dos elementos
+    return a 
+
+def bubblesort_otimizado(arr):
+    a = arr.copy()
+    n = len(a)
+    for i in range(n):
+        trocar = False  # detecta se houve troca
+        for j in range(0, n-i-1):
+            if a[j] > a[j+1]:
+                a[j], a[j+1] = a[j+1], a[j]
+                trocar = True
+        if not trocar:  # Se não tiver a troca é pq ta está ordenado
+            break
+    return a
+
+def selectionsort(arr):
+    a = arr.copy()
+    n = len(a)
+    for i in range(n):
+        men_ele = i  # menor elemento
+        for j in range(i+1, n):
+            if a[j] < a[men_ele]:
+                men_ele = j
+        a[i], a[men_ele] = a[men_ele], a[i]  # Coloca o menor na posição correta
+    return a
+
+def selectionsort_otimizado(arr, inicio=0):
+    a = arr if inicio > 0 else arr.copy()
+    if inicio >= len(a) - 1:  # Caso base: lista já ordenada
+        return a
+    men_ele = inicio
+    for i in range(inicio + 1, len(a)):
+        if a[i] < a[men_ele]:
+            men_ele = i
+    a[inicio], a[men_ele] = a[men_ele], a[inicio]
+    return selectionsort_otimizado(a, inicio + 1)  # Chama a si mesma com novo início
+
+def insertionsort(arr):
+    a = arr.copy()
+    for i in range(1, len(a)):
+        elem = a[i]  # Elemento a ser inserido na parte ordenada
+        j = i - 1
+        while j >= 0 and elem < a[j]:  # os numeros maiores vao para a direita 
+            a[j + 1] = a[j]
+            j -= 1
+        a[j + 1] = elem  # Insere o elemento na posição correta
+    return a
+
+def insertionsort_otimizado(arr):
+    sorted_list = []  # Lista ordenada crescente sendo construída
+    for item in arr:
+        for i in range(len(sorted_list)):
+            if item < sorted_list[i]:  # Encontra posição correta
+                sorted_list.insert(i, item)  # Insere item
+                break
+        else:
+            sorted_list.append(item)  # Se não inseriu antes, é o maior até agora
+    return sorted_list
+
+# Shell Sort usando sequências de gap padrão (n/2, n/4, ...)
+def shellsort_1(arr):
+    a = arr.copy()
+    n = len(a)
+    gap = n // 2  # Inicia com um gap grande
+    while gap > 0:
+        for i in range(gap, n):
+            temp = a[i]
+            j = i
+            while j >= gap and a[j - gap] > temp:
+                a[j] = a[j - gap]  # Move elementos maiores para frente
+                j -= gap
+            a[j] = temp  # Insere o valor no lugar certo
+        gap //= 2  # Reduz o gap
+    return a
+
+# Shell Sort usando sequência de Knuth (1, 4, 13, ...)
+def shellsort_2(arr):
+    a = arr.copy()
+    gaps = [1]
+    while gaps[-1] < len(a) // 3:
+        gaps.append(3 * gaps[-1] + 1)  # Geração da sequência de Knuth
+    for gap in reversed(gaps):  # Começa com os maiores gaps
+        for i in range(gap, len(a)):
+            temp = a[i]
+            j = i
+            while j >= gap and a[j - gap] > temp:
+                a[j] = a[j - gap]
+                j -= gap
+            a[j] = temp
+    return a
+
+# Função para medir tempo de execução de cada algoritmo com diferentes entradas
+def medir_tempos(algoritmos, entradas):
+    resultados = []
+    for nome, func in algoritmos:  # Para cada algoritmo
+        tempos = []
+        for entrada in entradas:  # Para cada tipo de entrada (aleatória, ordenada, inversa)
+            inicio = time.time()
+            func(entrada)
+            fim = time.time()
+            tempos.append(fim - inicio)  # Armazena o tempo decorrido
+        resultados.append((nome, *tempos))  # Salva os tempos com o nome do algoritmo
+    return resultados
+
+# Função para imprimir os resultados em forma de tabela
+def exibir_tabela(resultados):
+    print(f"{'Método':30} {'Aleatória':10} {'Ordenada':10} {'Inversa':10}")
+    for linha in resultados:
+        nome, aleatoria, ordenada, inversa = linha
+        print(f"{nome:30} {aleatoria:>10f} {ordenada:10f} {inversa:10f}")
+
+# Função principal que executa o benchmark dos algoritmos
+def executar_benchmark(n=1000):
+    # Gera listas de entrada para os testes
+    entrada_aleatoria = random.sample(range(n * 2), n)  # Lista aleatória
+    entrada_ordenada = sorted(entrada_aleatoria)  # Lista já ordenada
+    entrada_inversa = sorted(entrada_aleatoria, reverse=True)  # Lista inversamente ordenada
+
+    entradas = [entrada_aleatoria, entrada_ordenada, entrada_inversa]
+
+    # Lista de algoritmos a serem testados com seus nomes
+    algoritmos = [
+        ("Bubblesort (básico)", bubblesort),
+        ("Bubblesort (otimizado)", bubblesort_otimizado),
+        ("Selectionsort (básico)", selectionsort),
+        ("Selectionsort (recursivo)", lambda a: selectionsort_otimizado(a.copy())),
+        ("Insertionsort (básico)", insertionsort),
+        ("Insertionsort (com insert)", insertionsort_otimizado),
+        ("Shellsort (1,2,4,...)", shellsort_1),
+        ("Shellsort (1,4,13,...)", shellsort_2),
+    ]
+    # Mede os tempos e exibe os resultados
+    resultados = medir_tempos(algoritmos, entradas)
+    exibir_tabela(resultados)
+
+# Chama a função principal para executar os testes
+executar_benchmark(n=1000)
